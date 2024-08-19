@@ -1,0 +1,5 @@
+# To be used with polkadot.yml
+services:
+  polkadot:
+    ports:
+      - ${RPC_PORT:-9944}:${RPC_PORT:-9944}/tcp

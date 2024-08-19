@@ -1,0 +1,77 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 20m
+      max-file: "3"
+
+services:
+  polkadot:
+    image: parity/polkadot:${DOCKER_TAG}
+    restart: unless-stopped
+    volumes:
+      - polkadot-data:/data
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${P2P_PORT}:${P2P_PORT}/tcp
+    ulimits:
+      nofile:
+        soft: "65536"
+        hard: "65536"
+    <<: *logging
+    entrypoint:
+      - polkadot
+      - --base-path
+      - /data
+      - --database
+      - auto
+      - --chain
+      - ${NETWORK}
+      - --name
+      - ${NODE_NAME}
+      - --state-pruning
+      - "1000"
+      - --blocks-pruning
+      - archive-canonical
+      - --rpc-port
+      - ${RPC_PORT}
+      - --rpc-external
+      - --rpc-cors
+      - all
+      - --rpc-methods
+      - Safe
+      - --rpc-max-request-size
+      - "1000"
+      - --rpc-max-response-size
+      - "1000"
+      - --public-addr
+      - /ip4/${SERVER_IP}
+      - --port
+      - ${P2P_PORT}
+      - --prometheus-port
+      - "6060"
+      - --prometheus-external
+      - --telemetry-url
+      - "wss://telemetry.polkadot.io/submit/ 0"
+      - --log
+      - ${LOG_LEVEL}
+  
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${RPC_HOST}.service=${RPC_HOST}
+      - traefik.http.routers.${RPC_HOST}.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST}.rule=Host(`${RPC_HOST}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${RPC_HOST}lb.service=${RPC_HOST}
+      - traefik.http.routers.${RPC_HOST}lb.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${RPC_HOST}.loadbalancer.server.port=${RPC_PORT}
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=6060
+      - metrics.instance=polkadot
+      - metrics.network=${NETWORK}
+
+volumes:
+  polkadot-data:
