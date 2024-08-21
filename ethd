@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-__project_name="X Docker"
-__app_name="X node"
-__sample_service="X-geth"
+__project_name="Polkadot Docker"
+__app_name="Polkadot node"
+__sample_service="polkadot"
 __docker_exe="docker"
 __compose_exe="docker compose"
 __compose_upgraded=0
@@ -484,8 +484,8 @@ envmigrate() {
   fi
 
 # Adjust these vars to your project
-  ALL_VARS=( COMPOSE_FILE NETWORK SNAPSHOT LOG_LEVEL DOMAIN RPC_HOST RPC_LB WS_HOST WS_LB RPC_PORT WS_PORT P2P_PORT \
-             SCRIPT_TAG X_SRC_BUILD_TARGET X_SRC_REPO X_DOCKER_TAG X_DOCKER_REPO X_DOCKERFILE )
+  ALL_VARS=( COMPOSE_FILE NODE_NAME SERVER_IP NETWORK DOCKER_TAG RPC_PORT P2P_PORT \
+             DOMAIN RPC_HOST RPC_LB LOG_LEVEL SCRIPT_TAG )
   OLD_VARS=( )
   NEW_VARS=( )
 
@@ -639,8 +639,8 @@ version() {
 # Client versions
 # Adjust for your clients and how to check their version
   case "${value}" in
-    *x.yml* )
-      docompose exec x-geth x-geth version
+    *polkadot.yml* )
+      docompose exec polkadot polkadot --version
       ;;&
   esac
 }
