@@ -7,19 +7,30 @@ x-logging: &logging
 
 services:
   polkadot:
-    image: parity/polkadot:${DOCKER_TAG}
+    build:
+      context: ./polkadot
+      dockerfile: ${DOCKERFILE}
+      args:
+        - DOCKER_TAG=${DOCKER_TAG:-latest}
+        - DOCKER_REPO=${DOCKER_REPO:-parity/polkadot}
+        - NODE_KEY_FILE=${NODE_KEY_FILE}
+    image: polkadot:local
+    pull_policy: never
+    user: parity
     restart: unless-stopped
     volumes:
       - polkadot-data:/data
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${P2P_PORT}:${P2P_PORT}/tcp
+      - ${RPC_PORT}:${RPC_PORT}/tcp
     ulimits:
       nofile:
         soft: "65536"
         hard: "65536"
     <<: *logging
     entrypoint:
+      - docker-entrypoint.sh
       - polkadot
       - --base-path
       - /data
@@ -39,7 +50,7 @@ services:
       - --rpc-cors
       - all
       - --rpc-methods
-      - Safe
+      - unsafe
       - --rpc-max-request-size
       - "1000"
       - --rpc-max-response-size

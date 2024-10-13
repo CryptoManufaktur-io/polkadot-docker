@@ -1,0 +1,21 @@
+ARG DOCKER_TAG=latest
+ARG DOCKER_REPO=parity/polkadot
+
+FROM ${DOCKER_REPO}:${DOCKER_TAG}
+
+ARG NODE_KEY_FILE
+
+ARG USER=parity
+
+USER root
+RUN apt-get update && apt-get install -y ca-certificates bash hwloc libhwloc-dev wget curl unzip lz4 zstd jq aria2
+RUN chown -R polkadot:polkadot /data
+
+# Cannot assume buildkit, hence no chmod
+COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+# Belt and suspenders
+RUN chmod -R 755 /usr/local/bin/docker-entrypoint.sh
+
+USER ${USER}
+
+ENTRYPOINT ["/usr/local/bin/polkadot"]
