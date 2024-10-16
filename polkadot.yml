@@ -15,7 +15,7 @@ services:
         - DOCKER_REPO=${DOCKER_REPO:-parity/polkadot}
     image: polkadot:local
     pull_policy: never
-    user: parity
+    user: polkadot
     restart: unless-stopped
     volumes:
       - polkadot-data:/data
