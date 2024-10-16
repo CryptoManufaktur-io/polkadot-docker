@@ -13,7 +13,6 @@ services:
       args:
         - DOCKER_TAG=${DOCKER_TAG:-latest}
         - DOCKER_REPO=${DOCKER_REPO:-parity/polkadot}
-        - NODE_KEY_FILE=${NODE_KEY_FILE}
     image: polkadot:local
     pull_policy: never
     user: parity
@@ -24,6 +23,9 @@ services:
     ports:
       - ${P2P_PORT}:${P2P_PORT}/tcp
       - ${RPC_PORT}:${RPC_PORT}/tcp
+    environment:
+      - EXTRAS=${EXTRAS:-}
+      - NODE_KEY_FILE=${NODE_KEY_FILE:-}
     ulimits:
       nofile:
         soft: "65536"
