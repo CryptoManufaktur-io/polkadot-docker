@@ -3,9 +3,13 @@ ARG DOCKER_REPO=parity/polkadot
 
 FROM ${DOCKER_REPO}:${DOCKER_TAG}
 
+# Unused, this is here to avoid build time complaints
+ARG BUILD_TARGET
+ARG SRC_REPO
+
 ARG NODE_KEY_FILE
 
-ARG USER=parity
+ARG USER=polkadot
 
 USER root
 RUN apt-get update && apt-get install -y ca-certificates bash hwloc libhwloc-dev wget curl unzip lz4 zstd jq aria2

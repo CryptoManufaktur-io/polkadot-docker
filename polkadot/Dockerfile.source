@@ -1,20 +1,33 @@
-FROM docker.io/paritytech/ci-unified:bullseye-1.77.0-2024-04-10-v20240408 as builder
+FROM rust:bookworm as builder
 
+USER root
+
+# Unused, this is here to avoid build time complaints
 ARG DOCKER_TAG
+ARG DOCKER_REPO
+
+ARG BUILD_TARGET
+ARG SRC_REPO
 ARG NODE_KEY_FILE
+
+RUN apt-get update && apt-get install --assume-yes git clang curl libssl-dev llvm libudev-dev make protobuf-compiler
+RUN rustup default stable && rustup update && rustup component add rust-src rustfmt clippy && rustup target add wasm32-unknown-unknown
+RUN rustup update nightly && rustup target add wasm32-unknown-unknown --toolchain nightly
 
 WORKDIR /polkadot
 
-RUN bash -c "git clone https://github.com/paritytech/polkadot-sdk.git && cd polkadot-sdk && git config advice.detachedHead false && git fetch --all --tags && git checkout ${DOCKER_TAG} && cargo build --locked --release"
-
+RUN bash -c "git clone ${SRC_REPO} && cd polkadot-sdk && git config advice.detachedHead false && git fetch --all --tags && git checkout ${BUILD_TARGET}"
+RUN bash -c "cd polkadot-sdk && cargo build --locked --release"
 
 FROM debian:bookworm-slim
 COPY --from=builder /polkadot/polkadot-sdk/target/release/polkadot /usr/local/bin
+COPY --from=builder /polkadot/polkadot-sdk/target/release/polkadot-prepare-worker /usr/local/bin
+COPY --from=builder /polkadot/polkadot-sdk/target/release/polkadot-execute-worker /usr/local/bin
 
 USER root
 RUN apt-get update && apt-get install -y ca-certificates bash tzdata hwloc libhwloc-dev wget curl unzip lz4 zstd jq aria2
 
-ARG USER=parity
+ARG USER=polkadot
 ARG UID=1000
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
@@ -32,6 +45,7 @@ RUN mkdir -p /data /polkadot/.local/share && \
 
 # Cannot assume buildkit, hence no chmod
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
+
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/docker-entrypoint.sh
 

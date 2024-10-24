@@ -13,6 +13,8 @@ services:
       args:
         - DOCKER_TAG=${DOCKER_TAG:-latest}
         - DOCKER_REPO=${DOCKER_REPO:-parity/polkadot}
+        - BUILD_TARGET=${BUILD_TARGET:-master}
+        - SRC_REPO=${SRC_REPO:-https://github.com/paritytech/polkadot-sdk}
     image: polkadot:local
     pull_policy: never
     user: polkadot
