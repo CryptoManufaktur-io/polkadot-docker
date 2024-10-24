@@ -28,7 +28,7 @@ USER root
 RUN apt-get update && apt-get install -y ca-certificates bash tzdata hwloc libhwloc-dev wget curl unzip lz4 zstd jq aria2
 
 ARG USER=polkadot
-ARG UID=1000
+ARG UID=10001
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -37,6 +37,8 @@ RUN adduser \
     --shell "/sbin/nologin" \
     --uid "${UID}" \
     "${USER}"
+
+RUN usermod -rG users ${USER}
 
 RUN mkdir -p /data /polkadot/.local/share && \
         chown -R ${USER}:${USER} /data && \

@@ -10,10 +10,13 @@ ARG SRC_REPO
 ARG NODE_KEY_FILE
 
 ARG USER=polkadot
+ARG UID=10001
 
 USER root
 RUN apt-get update && apt-get install -y ca-certificates bash hwloc libhwloc-dev wget curl unzip lz4 zstd jq aria2
-RUN chown -R polkadot:polkadot /data
+
+RUN groupmod -g "${UID}" ${USER} && usermod -u "${UID}" -g "${UID}" ${USER}
+RUN chown -R ${USER}:${USER} /data
 
 # Cannot assume buildkit, hence no chmod
 COPY --chown=${USER}:${USER} ./docker-entrypoint.sh /usr/local/bin/
