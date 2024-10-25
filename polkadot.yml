@@ -88,5 +88,22 @@ services:
       - metrics.instance=polkadot
       - metrics.network=${NETWORK}
 
+  create-staking-keys:
+    profiles: ["tools"]
+    build:
+      context: ./subkey
+      dockerfile: Dockerfile.source
+    image: subkey:local
+    pull_policy: never
+    volumes:
+      - ./keys:/data/keys
+    entrypoint: ["/bin/bash","-c"]
+    environment:
+      - NETWORK=${NETWORK:-}
+    command:
+      - |
+        subkey generate --network polkadot --keystore-path /data/keys --output-type json > /data/keys/stash.json
+        subkey generate --network polkadot --keystore-path /data/keys --output-type json > /data/keys/proxy.json
+
 volumes:
   polkadot-data:

@@ -1,0 +1,48 @@
+FROM rust:bookworm as builder
+
+USER root
+
+# Unused, this is here to avoid build time complaints
+ARG DOCKER_TAG
+ARG DOCKER_REPO
+
+ARG BUILD_TARGET
+ARG SRC_REPO
+ARG NODE_KEY_FILE
+
+RUN apt-get update && apt-get install --assume-yes git clang curl libssl-dev llvm libudev-dev make protobuf-compiler
+RUN rustup update nightly
+
+WORKDIR /build
+
+RUN bash -c "git clone https://github.com/paritytech/polkadot-sdk.git && cd polkadot-sdk && cargo +nightly build --package subkey --locked --release"
+
+FROM debian:bookworm-slim
+COPY --from=builder /build/polkadot-sdk/target/release/subkey /usr/local/bin
+
+USER root
+RUN apt-get update && apt-get install -y ca-certificates bash tzdata hwloc libhwloc-dev wget curl unzip lz4 zstd jq aria2
+
+ARG USER=polkadot
+ARG UID=10001
+
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
+
+RUN usermod -rG users ${USER}
+
+RUN mkdir -p /data /polkadot/.local/share && \
+        chown -R ${USER}:${USER} /data && \
+        ln -s /data /polkadot/.local/share/polkadot && \
+        /usr/local/bin/subkey --version
+
+USER ${USER}
+
+VOLUME ["/data"]
+
+ENTRYPOINT ["/usr/local/bin/subkey"]
