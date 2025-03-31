@@ -522,12 +522,6 @@ envmigrate() {
   __during_migrate=0
 }
 
-
-prep_conffiles() {
-  # nothing to do.
-}
-
-
 upgrade() {
   update
 }
@@ -712,7 +706,6 @@ __params=$*
 
 handle_root
 determine_distro
-prep_conffiles
 
 check_for_snap
 
