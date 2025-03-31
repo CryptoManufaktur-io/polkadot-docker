@@ -59,8 +59,6 @@ services:
       - "1000"
       - --rpc-max-response-size
       - "1000"
-      - --public-addr
-      - /ip4/${SERVER_IP}
       - --port
       - ${P2P_PORT}
       - --prometheus-port
